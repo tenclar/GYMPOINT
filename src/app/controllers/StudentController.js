@@ -22,6 +22,17 @@ class StudentController {
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'validation fields fails' });
     }
+
+    const studentExist = await Student.findOne({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (studentExist) {
+      return res.status(400).json({ error: 'Student already exist.' });
+    }
+
     const student = await Student.create(req.body);
 
     return res.json(student);
