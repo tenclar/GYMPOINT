@@ -11,13 +11,13 @@ class Mail {
       host,
       port,
       secure,
-      auth: auth.user ? auth : auth,
+      auth: auth.user ? auth : null,
     });
     this.configureTemplates();
   }
 
   configureTemplates() {
-    const viewPath = resolve(+__dirname, '..', 'app', 'views', 'emails');
+    const viewPath = resolve(__dirname, '..', 'app', 'views', 'emails');
     this.transporter.use(
       'compile',
       nodemailerhbs({
@@ -25,7 +25,7 @@ class Mail {
           layoutsDir: resolve(viewPath, 'layouts'),
           partialsDir: resolve(viewPath, 'partials'),
           defaultLayout: 'default',
-          extname: '.hps',
+          extname: '.hbs',
         }),
         viewPath,
         extName: '.hbs',

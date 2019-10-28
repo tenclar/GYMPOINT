@@ -1,7 +1,9 @@
-import { parseISO, addMonths } from 'date-fns';
+import { parseISO, addMonths, format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import * as Yup from 'yup';
+import Mail from '../../lib/Mail';
 import Student from '../models/Student';
-
+import Enroll from '../models/Enroll';
 import Plan from '../models/Plan';
 
 class EnrollController {
@@ -21,7 +23,7 @@ class EnrollController {
      * ckeck student
      */
 
-    const student = await Plan.findByPk(student_id);
+    const student = await Student.findByPk(student_id);
     /**
      * check plan selected
      */
@@ -40,15 +42,35 @@ class EnrollController {
       price: pricePlan,
     };
 
-    return res.json(enroll);
-
+    await Enroll.create(enroll);
     /**
      *
      *  Process Mail
      */
-    await Queue.add(CancellationMail.key, {
-      appointment,
+    /*  await Queue.add(CancellationMail.key, {
+       appointment,
+     });
+   } */
+
+    await Mail.sendMail({
+      to: `${student.name} <${student.email}>`,
+      subject: 'Matrícula Efetuada',
+      template: 'enrollment',
+      context: {
+        student: student.name,
+        plan: plan.title,
+        dutation: plan.duration,
+        price: enroll.price.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }),
+        end_date: format(enroll.end_date, "'dia' dd 'de' MMMM 'de' yyyy", {
+          locale: ptBR,
+        }),
+      },
     });
+
+    return res.json(enroll);
   }
 
   index(req, res) {
